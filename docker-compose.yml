@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: cinemaflow-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: cinemaflow
+      POSTGRES_USER: cinemaflow
+      POSTGRES_PASSWORD: cinemaflow1234
+    volumes:
+      - cinemaflow_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  cinemaflow_postgres_data:

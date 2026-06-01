@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+
+# environment
+.env
+.env.local
+.env.development
+.env.production
+
+# logs
+logs
+*.log
+npm-debug.log*
+
+# prisma
+prisma/dev.db
+prisma/dev.db-journal
+
+# build
+dist/
+build/
+
+# coverage
+coverage/
+
+# vscode
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
