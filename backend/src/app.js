@@ -5,6 +5,7 @@ import screeningRoutes from "./routes/screening.routes.js";
 import theaterRoutes from "./routes/theater.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import authRoutes from "./routes/auth.routes.js";
+import reservationRoutes from "./routes/reservation.routes.js";
 
 const app = express();
 const PORT = 3000;
@@ -20,6 +21,7 @@ app.use("/api/screenings", screeningRoutes);
 app.use("/api/theaters", theaterRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/reservations", reservationRoutes);
 
 app.use(errorMiddleware);
 

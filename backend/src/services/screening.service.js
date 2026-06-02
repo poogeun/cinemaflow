@@ -3,6 +3,7 @@ import AppError from "../errors/app.error.js";
 
 const createScreening = async ({
   movieId,
+  theaterId,
   startTime,
   endTime,
 }) => {
@@ -23,6 +24,7 @@ const createScreening = async ({
     return await prisma.screening.create({
       data: {
         movieId,
+        theaterId,
         startTime: new Date(startTime),
         endTime: new Date(endTime),
       },
