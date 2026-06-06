@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import movieRoutes from "./routes/movie.routes.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
 import screeningRoutes from "./routes/screening.routes.js";
@@ -10,6 +11,9 @@ import reservationRoutes from "./routes/reservation.routes.js";
 const app = express();
 const PORT = 3000;
 
+app.use(cors({
+  origin: "http://localhost:5173",
+}));
 app.use(express.json());
 
 app.get("/", (req, res) => {

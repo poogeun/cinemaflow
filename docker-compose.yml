@@ -4,7 +4,7 @@ services:
     container_name: cinemaflow-postgres
     restart: always
     ports:
-      - "5432:5432"
+      - "15432:5432"
     environment:
       POSTGRES_DB: cinemaflow
       POSTGRES_USER: cinemaflow
