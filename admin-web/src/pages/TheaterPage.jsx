@@ -1,15 +1,28 @@
 import { useEffect, useState } from "react";
-import api from "../api/axios";
+import { createTheater, deleteTheater, getTheater, getTheaters } from "../api/theater.api.js";
 import { Box, Button, Chip, Paper, TextField, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import ConfirmDialog from "../components/common/ConfirmDialog";
+import TheaterDialog from "../components/theater/TheaterDialog";
+import TheaterDetailDialog from "../components/theater/TheaterDetailDialog";
 
 const TheaterPage = () => {
   const [theaters, setTheaters] = useState([]);
   const [keyword, setKeyword] = useState("");
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    seatRow: "",
+    seatColumn: "",
+  });
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedTheater, setSelectedTheater] = useState(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const fetchTheaters = async () => {
-    const response = await api.get("/theaters");
-    setTheaters(response.data);
+    const data = await getTheaters();
+    setTheaters(data);
   };
 
   useEffect(() => {
@@ -19,6 +32,65 @@ const TheaterPage = () => {
   const filteredTheaters = theaters.filter((theater) =>
     theater.name.toLowerCase().includes(keyword.toLowerCase())
   );
+
+  const handleOpen = () => setOpen(true);
+
+  const handleClose = () => {
+    setOpen(false);
+    setForm({
+      name: "",
+      seatRow: "",
+      seatColumn: "",
+    });
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSave = async () => {
+    await createTheater({
+      name: form.name,
+      seatRow: Number(form.seatRow),
+      seatColumn: Number(form.seatColumn),
+    });
+
+    await fetchTheaters();
+    handleClose();
+  };
+
+  const handleDetailOpen = async (theaterId) => {
+    const data = await getTheater(theaterId);
+    setSelectedTheater(data);
+    setDetailOpen(true);
+  };
+
+  const handleDetailClose = () => {
+    setSelectedTheater(null);
+    setDetailOpen(false);
+  };
+
+  const handleDeleteOpen = (theater) => {
+    setDeleteTarget(theater);
+    setDeleteOpen(true);
+  }
+
+  const handleDeleteClose = () => {
+    setDeleteTarget(null);
+    setDeleteOpen(false);
+  }
+
+  const handleDelete = async () => {
+    await deleteTheater(deleteTarget.id);
+
+    await fetchTheaters();
+    handleDeleteClose;
+  };
 
   const columns = [
     {
@@ -68,7 +140,7 @@ const TheaterPage = () => {
       headerName: "Actions",
       flex: 1.2,
       sortable: false,
-      renderCell: () => (
+      renderCell: (params) => (
         <Box
           sx={{
             width: "100%",
@@ -80,6 +152,7 @@ const TheaterPage = () => {
         >
           <Button
             size="small"
+            onClick={() => handleDetailOpen(params.row.id)}
             sx={{
               bgcolor: "#f3f4f6",
               color: "#111827",
@@ -97,6 +170,7 @@ const TheaterPage = () => {
 
           <Button
             size="small"
+            onClick={() => handleDeleteOpen(params.row)}
             sx={{
               bgcolor: "#fef2f2",
               color: "#dc2626",
@@ -149,6 +223,7 @@ const TheaterPage = () => {
 
         <Button
           variant="contained"
+          onClick={handleOpen}
           sx={{
             borderRadius: 3,
             px: 3,
@@ -246,6 +321,35 @@ const TheaterPage = () => {
           }}
         />
       </Paper>
+
+      <TheaterDialog
+        open={open}
+        form={form}
+        onClose={handleClose}
+        onChange={handleChange}
+        onSave={handleSave}
+      />
+
+      <TheaterDetailDialog
+        open={detailOpen}
+        theater={selectedTheater}
+        onClose={handleDetailClose}
+      />
+
+      <ConfirmDialog
+        open={deleteOpen}
+        title="Delete Theater"
+        description={
+          <>
+            이 상영관을 삭제하시겠습니까?
+            <br />
+            삭제된 상영관 및 좌석 정보는 복구할 수 없습니다.
+          </>
+        }
+        targetName={deleteTarget?.name}
+        onClose={handleDeleteClose}
+        onConfirm={handleDelete}
+      />
     </Box>
   );
 };

@@ -1,7 +1,9 @@
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Paper, TextField, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
-import api from "../api/axios.js";
+import { createMovie, deleteMovie, getMovies, updateMovie } from "../api/movie.api.js";
+import ConfirmDialog from "../components/common/ConfirmDialog.jsx";
+import MovieDialog from "../components/movie/MovieDialog.jsx";
 
 const MoviePage = () => {
   const columns = [
@@ -107,18 +109,16 @@ const MoviePage = () => {
   };
 
   const handleSave = async () => {
+    const payload = {
+      title: form.title,
+      runningTime: Number(form.runningTime),
+      description: form.description,
+    };
+
     if (selectedMovie) {
-      await api.put(`/movies/${selectedMovie.id}`, {
-        title: form.title,
-        runningTime: Number(form.runningTime),
-        description: form.description,
-      });
+      await updateMovie(selectedMovie.id, payload);
     } else {
-      await api.post("/movies", {
-        title: form.title,
-        runningTime: Number(form.runningTime),
-        description: form.description,
-      });
+      await createMovie(payload);
     }
 
     await fetchMovies();
@@ -148,9 +148,8 @@ const MoviePage = () => {
   };
 
   const fetchMovies = async () => {
-    const response = await api.get("/movies");
-
-    setMovies(response.data);
+    const data = await getMovies();
+    setMovies(data);
   };
 
   const handleDeleteOpen = (movie) => {
@@ -164,7 +163,7 @@ const MoviePage = () => {
   }
 
   const handleDelete = async () => {
-    await api.delete(`/movies/${selectedMovie.id}`);
+    await deleteMovie(selectedMovie.id);
 
     await fetchMovies();
     handleDeleteClose();
@@ -286,298 +285,29 @@ const MoviePage = () => {
         />
       </Paper>
 
-      <Dialog
+      <MovieDialog
         open={open}
+        form={form}
+        isEdit={!!selectedMovie}
         onClose={handleClose}
-        fullWidth
-        maxWidth="sm"
-        slotProps={{
-          paper: {
-            sx: {
-              borderRadius: 6,
-              p: 1,
-              boxShadow: "0 24px 60px rgba(15,23,42,0.18)",
-            },
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            px: 3,
-            pt: 3,
-            pb: 1
-          }}
-        >
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 900,
-              letterSpacing: "-0.4px",
-            }}
-          >
-            {selectedMovie ? "Edit Movie" : "Add Movie"}
-          </Typography>
+        onChange={handleChange}
+        onSave={handleSave}
+      />
 
-          <Typography
-            variant="body2"
-            sx={{
-              mt: 1,
-              color: "#6b7280",
-            }}
-          >
-            {selectedMovie
-              ? "영화 정보를 수정합니다."
-              : "새로운 영화 정보를 등록합니다."}
-          </Typography>
-        </DialogTitle>
-
-        <DialogContent
-          sx={{
-            px: 3,
-            py: 2,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2.2,
-          }}
-        >
-          <Box>
-            <Typography
-              sx={{
-                mb: 1,
-                fontSize: 14,
-                fontWeight: 800,
-                color: "#374151",
-              }}
-            >
-              Title
-            </Typography>
-
-            <TextField
-              name="title"
-              value={form.title}
-              onChange={handleChange}
-              fullWidth
-              placeholder="Enter movie title"
-              size="small"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  height: 46,
-                },
-              }}
-            />
-          </Box>
-
-          <Box>
-            <Typography
-              sx={{
-                mb: 1,
-                fontSize: 14,
-                fontWeight: 800,
-                color: "#374151",
-              }}
-            >
-              Running Time
-            </Typography>
-
-            <TextField
-              name="runningTime"
-              value={form.runningTime}
-              onChange={handleChange}
-              fullWidth
-              placeholder="Enter running time in minutes"
-              size="small"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  height: 46,
-                },
-              }}
-            />
-          </Box>
-
-          <Box>
-            <Typography
-              sx={{
-                mb: 1,
-                fontSize: 14,
-                fontWeight: 800,
-                color: "#374151",
-              }}
-            >
-              Description
-            </Typography>
-
-            <TextField
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              fullWidth
-              multiline
-              minRows={4}
-              placeholder="Enter movie description"
-              size="small"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                },
-              }}
-            />
-          </Box>                    
-        </DialogContent>
-
-        <DialogActions
-          sx={{
-            px: 3,
-            pb: 3,
-            pt: 2,
-            gap: 1,
-          }}
-        >
-          <Button
-            onClick={handleClose}
-            sx={{
-              borderRadius: 3,
-              px: 2.5,
-              py: 1.2,
-              bgcolor: "#f3f4f6",
-              color: "#111827",
-              textTransform: "none",
-              fontWeight: 800,
-            }}
-          >
-            Cancel
-          </Button>
-
-          <Button
-            onClick={handleSave}
-            variant="contained"
-            sx={{
-              borderRadius: 3,
-              px: 2.5,
-              py: 1.2,
-              bgcolor: "#4f46e5",
-              textTransform: "none",
-              fontWeight: 800,              
-            }}
-          >
-            {selectedMovie ? "Update Movie" : "Save Movie"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
+      <ConfirmDialog
         open={deleteOpen}
+        title="Delete Movie"
+        description={
+          <>
+            이 영화를 삭제하시겠습니까?
+            <br />
+            삭제된 영화 정보는 복구할 수 없습니다.
+          </>
+        }
+        targetName={selectedMovie?.title}
         onClose={handleDeleteClose}
-        fullWidth
-        maxWidth="xs"
-        slotProps={{
-          paper: {
-            sx: {
-              borderRadius: 6,
-              p: 3,
-              boxShadow: "0 24px 60px rgba(15,23,42,0.18)",
-            },
-          },
-        }}
-      >
-        <Box
-          sx={{
-            width: 52,
-            height: 52,
-            borderRadius: "50%",
-            bgcolor: "#fef2f2",
-            color: "#dc2626",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 26,
-            fontWeight: 900,
-            mb: 2.2,
-          }}
-        >
-          !
-        </Box>
-
-        <Typography
-          variant="h5"
-          sx={{
-            fontWeight: 900,
-            letterSpacing: "-0.4px",
-            mb: 1,
-          }}
-        >
-          Delete Movie
-        </Typography>
-
-        <Typography
-          sx={{
-            color: "#6b7280",
-            lineHeight: 1.6,
-            fontSize: 14,
-          }}
-        >
-          이 영화를 삭제하시겠습니까?
-          <br />
-          삭제된 영화는 정보를 복구할 수 없습니다.
-        </Typography>
-
-        <Box
-          sx={{
-            mt: 2,
-            px: 2,
-            py: 1.6,
-            borderRadius: 3,
-            bgcolor: "#f9fafb",
-            border: "1px solid #e5e7eb",
-            fontWeight: 800,
-          }}
-        >
-          {selectedMovie?.title}
-        </Box>
-
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: 1.2,
-            mt: 3.2,
-          }}
-        >
-          <Button
-            onClick={handleDeleteClose}
-            sx={{
-              borderRadius: 3,
-              px: 2.5,
-              py: 1.2,
-              bgcolor: "#f3f4f6",
-              color: "#111827",
-              textTransform: "none",
-              fontWeight: 800,
-            }}
-          >
-            Cancel
-          </Button>
-
-          <Button
-            onClick={handleDelete}
-            sx={{
-              borderRadius: 3,
-              px: 2.5,
-              py: 1.2,
-              bgcolor: "#dc2626",
-              color: "#ffffff",
-              textTransform: "none",
-              fontWeight: 800,
-              "&:hover": {
-                bgcolor: "#b91c1c",
-              },
-            }}
-          >
-            Delete
-          </Button>
-        </Box>
-      </Dialog>
+        onConfirm={handleDelete}
+      />
     </Box>
   );
 };
