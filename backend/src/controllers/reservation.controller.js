@@ -53,3 +53,23 @@ export const cancelReservation = async (
     next(error);
   }
 };
+
+export const getReservations = async (req, res, next) => {
+  try {
+    const reservations = await reservationService.getReservations();
+
+    res.json(reservations);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const cancelReservationByAdmin = async (req, res, next) => {
+  try {
+    const reservation = await reservationService.cancelReservationByAdmin(req.params.id);
+
+    res.json(reservation);
+  } catch (error) {
+    next(error);
+  }
+};

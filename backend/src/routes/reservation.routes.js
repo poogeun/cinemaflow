@@ -22,4 +22,16 @@ router.patch(
   reservationController.cancelReservation
 );
 
+router.get(
+  "/",
+  authMiddleware,
+  reservationController.getReservations
+);
+
+router.patch(
+  ":id/admin-cancel",
+  authMiddleware,
+  reservationController.cancelReservationByAdmin
+);
+
 export default router;

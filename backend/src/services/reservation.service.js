@@ -135,3 +135,56 @@ export const cancelReservation = async (
     },
   });
 };
+
+export const getReservations = async () => {
+  return await prisma.reservation.findMany({
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+        },
+      },
+      screening: {
+        include: {
+          movie: true,
+          theater: true,
+        },
+      },
+      reservationSeats: {
+        include: {
+          seat: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+
+export const cancelReservationByAdmin = async (reservationId) => {
+  const reservation = await prisma.reservation.findUnique({
+    where: {
+      id: Number(reservationId)
+    },
+  });
+
+  if (!reservation) {
+    throw new AppError("예약을 찾을 수 없습니다.", 404);
+  }
+
+  if (reservation.status === "CANCELED") {
+    throw new AppError("이미 취소된 예약입니다.", 400);
+  }
+
+  return await prisma.reservation.update({
+    where: {
+      id: reservation.id,
+    },
+    data: {
+      status: "CANCELED",
+    },
+  });
+};
