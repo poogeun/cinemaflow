@@ -26,7 +26,32 @@ const getScreenings = async (req, res, next) => {
   }
 };
 
+const deleteScreening = async (req, res, next) => {
+  try {
+    await screeningService.deleteScreening(req.params.id);
+
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateScreening = async (req, res, next) => {
+  try {
+    const screening = await screeningService.updateScreening(
+      req.params.id,
+      req.body
+    );
+
+    res.json(screening);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   createScreening,
   getScreenings,
+  deleteScreening,
+  updateScreening,
 };

@@ -10,4 +10,14 @@ router.post(
   screeningController.createScreening
 );
 
+router.delete(
+  "/:id",
+  screeningController.deleteScreening
+);
+
+router.put(
+  "/:id",
+  screeningController.updateScreening
+);
+
 export default router;
