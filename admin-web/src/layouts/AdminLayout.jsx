@@ -1,11 +1,14 @@
-import { Avatar, Box, Drawer, InputBase, List, ListItemButton, ListItemIcon, ListItemText, Typography } from "@mui/material";
-import { NavLink, Outlet } from "react-router-dom";
+import { Avatar, Box, Button, Drawer, InputBase, List, ListItemButton, ListItemIcon, ListItemText, Typography } from "@mui/material";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import MovieIcon from "@mui/icons-material/Movie";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import SearchIcon from "@mui/icons-material/Search";
+import { LogoutOutlined } from "@mui/icons-material";
+import { useEffect, useState } from "react";
+import { getMe } from "../api/auth.api";
 
 const drawerWidth = 260;
 
@@ -18,6 +21,32 @@ const menus = [
 ];
 
 const AdminLayout = () => {
+  const navigate = useNavigate();
+
+  const [admin, setAdmin] = useState(null);
+
+  const fetchAdmin = async () => {
+    try {
+      const data = await getMe();
+      setAdmin(data);
+    } catch {
+      localStorage.removeItem("accessToken");
+      navigate("/login", {
+        replace: true,
+      });
+    }
+  };
+  useEffect(() => {
+    fetchAdmin();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    navigate("/login", {
+      replace: true,
+    });
+  };
+
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f7f8fc" }}>
       <Drawer
@@ -77,6 +106,25 @@ const AdminLayout = () => {
             </ListItemButton>
           ))}
         </List>
+
+        <Button
+          fullWidth
+          startIcon={<LogoutOutlined />}
+          onClick={handleLogout}
+          sx={{
+            justifyContent: "flex-start",
+            px: 2,
+            py: 1.5,
+            borderRadius: 3,
+            color: "text.secondary",
+            fontWeight: 800,
+            "&:hover": {
+              bgcolor: "#fef2f2",
+            },
+          }}
+        >
+          로그아웃
+        </Button>
       </Drawer>
 
       <Box
@@ -124,21 +172,30 @@ const AdminLayout = () => {
               gap: 1.5,
             }}
           >
-            <Typography
-              sx={{
-                fontWeight: 700,
-              }}
-            >
-              Admin
-            </Typography>
+            <Box sx={{ textAlign: "right" }}>
+              <Typography>
+                {admin?.name ?? " 관리자"}
+              </Typography>
+
+              <Typography
+                sx={{
+                  color: "text.secondary",
+                  fontSize: 12,
+                }}
+              >
+                {admin?.email ?? ""}
+              </Typography>
+            </Box>
+
             <Avatar
               sx={{
                 bgcolor: "#4f46e5",
                 width: 40,
                 height: 40,
+                fontWeight: 800,
               }}
             >
-              A
+              {admin?.name?.charAt(0) ?? "A"}
             </Avatar>
           </Box>
         </Box>

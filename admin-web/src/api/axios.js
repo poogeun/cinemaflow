@@ -14,4 +14,31 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+
+  (error) => {
+    const status =
+      error.response?.status;
+
+    const isLoginRequest =
+      error.config?.url === "/auth/login";
+
+    if (
+      status === 401 &&
+      !isLoginRequest
+    ) {
+      localStorage.removeItem(
+        "accessToken"
+      );
+
+      window.location.replace(
+        "/login"
+      );
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export default api;

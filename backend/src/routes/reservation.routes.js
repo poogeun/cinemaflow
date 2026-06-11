@@ -1,12 +1,14 @@
 import express from "express";
 import * as reservationController from "../controllers/reservation.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
+import adminMiddleware from "../middlewares/admin.middleware.js";
 
 const router = express.Router();
 
 router.post(
   "/",
   authMiddleware,
+  adminMiddleware,
   reservationController.createReservation
 );
 
@@ -19,6 +21,7 @@ router.get(
 router.patch(
   "/:id/cancel",
   authMiddleware,
+  adminMiddleware,
   reservationController.cancelReservation
 );
 
@@ -31,6 +34,7 @@ router.get(
 router.patch(
   ":id/admin-cancel",
   authMiddleware,
+  adminMiddleware,  
   reservationController.cancelReservationByAdmin
 );
 

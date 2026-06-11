@@ -16,3 +16,15 @@ export const login = async (
     next(error);
   }
 };
+
+export const getMe = async (req, res, next) => {
+  try {
+    const user = await authService.getMe(
+      req.user.userId
+    );
+
+    res.json(user);
+  } catch (error) {
+    next(error);
+  }
+};

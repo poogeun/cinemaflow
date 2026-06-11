@@ -1,24 +1,16 @@
 import express from "express";
-import * as theaterController from "../controllers/theater.controller.js";
+
+import * as dashboardController from "../controllers/dashboard.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import adminMiddleware from "../middlewares/admin.middleware.js";
 
 const router = express.Router();
 
-router.get("/",
-  theaterController.getTheaters
-);
-
-router.get("/:id", 
-  theaterController.getTheaterById
-);
-
-router.post(
+router.get(
   "/",
   authMiddleware,
   adminMiddleware,
-  theaterController.createTheater
+  dashboardController.getDashboard
 );
-
 
 export default router;

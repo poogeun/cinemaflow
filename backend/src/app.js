@@ -7,6 +7,7 @@ import theaterRoutes from "./routes/theater.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import reservationRoutes from "./routes/reservation.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
 
 const app = express();
 const PORT = 3000;
@@ -26,6 +27,7 @@ app.use("/api/theaters", theaterRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/reservations", reservationRoutes);
+app.use("/api/admin/dashboard", dashboardRoutes);
 
 app.use(errorMiddleware);
 

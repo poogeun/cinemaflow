@@ -1,63 +1,48 @@
 import { Box, Card, CardContent, Chip, Grid, LinearProgress, Paper, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
-
-const summaryCards = [
-  {
-    label: "오늘 상영",
-    value: "12건",
-  },
-  {
-    label: "오늘 예매",
-    value: "143건",
-  },
-  {
-    label: "오늘 취소",
-    value: "7건",
-  },
-];
-
-const screenings = [
-  {
-    movie: "인터스텔라",
-    time: "14:00",
-    theater: "1관",
-    seats: "32 / 40",
-    status: "상영중",
-  },
-  {
-    movie: "듄",
-    time: "15:00",
-    theater: "2관",
-    seats: "18 / 40",
-    status: "상영중",
-  },
-  {
-    movie: "인셉션",
-    time: "16:30",
-    theater: "3관",
-    seats: "21 / 50",
-    status: "준비중",
-  },
-];
-
-const soldOutList = [
-  {
-    movie: "인터스텔라",
-    rate: 80,
-    description: "14:00 · 1관 · 32 / 40",
-  },
-  {
-    movie: "듄",
-    rate: 72,
-    description: "19:00 · 2관 · 36 / 50",
-  },
-  {
-    movie: "오펜하이머",
-    rate: 68,
-    description: "21:00 · 1관 · 27 / 40",
-  },
-];
+import { getDashboard } from "../api/dashboard.api.js";
+import { useEffect, useState } from "react";
 
 const DashboardPage = () => {
+  const [dashboard, setDashboard] = useState(null);
+
+  const fetchDashboard = async () => {
+    const data = await getDashboard();
+    setDashboard(data);
+  };
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  const formatTime = (value) => {
+    if (!value) return "-";
+
+    const date = new Date(value);
+
+    return date.toLocaleTimeString("ko-KR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const summaryCards = [
+    {
+      label: "오늘 상영",
+      value: `${dashboard?.summary?.todayScreenings ?? 0}건`,
+    },
+    {
+      label: "오늘 예매",
+      value: `${dashboard?.summary?.todayReservations ?? 0}건`,
+    },
+    {
+      label: "오늘 취소",
+      value: `${dashboard?.summary?.todayCanceled ?? 0}건`,
+    },        
+  ];
+
+  const screenings = dashboard?.nowScreenings ?? [];
+  const soldOutList = dashboard?.nearSoldOut ?? [];
+
   return (
     <Box>
       <Box sx={{ mb: 4 }}>
@@ -136,42 +121,30 @@ const DashboardPage = () => {
                   <TableCell>시간</TableCell>
                   <TableCell>상영관</TableCell>
                   <TableCell>예매 좌석</TableCell>
-                  <TableCell>상태</TableCell>                  
                 </TableRow>
               </TableHead>
 
               <TableBody>
                 {screenings.map((screening) => (
                   <TableRow
-                    key={`${screening.movie}-${screening.time}`}
+                    key={`${screening.movieTitle}-${formatTime(screening.startTime)}`}
                   >
                     <TableCell>
-                      {screening.movie}
+                      {screening.movieTitle}
                     </TableCell>
 
                     <TableCell>
-                      {screening.time}
+                      {formatTime(screening.startTime)}
                     </TableCell>
 
                     <TableCell>
-                      {screening.theater}
+                      {screening.theaterName}
                     </TableCell>
 
                     <TableCell>
-                      {screening.seats}
+                      {`${screening.reservedSeats} / ${screening.totalSeats}`}
                     </TableCell>
-
-                    <TableCell>
-                      <Chip
-                        size="small"
-                        label={screening.status}
-                        color={
-                          screening.status === "상영중"
-                            ? "success"
-                            : "default"
-                        }
-                      />
-                    </TableCell>                    
+                 
                   </TableRow>
                 ))}
               </TableBody>
@@ -198,7 +171,7 @@ const DashboardPage = () => {
             </Typography>
             {soldOutList.map((item) => (
               <Box
-                key={item.movie}
+                key={item.movieTitle}
                 sx={{
                   mb: 3,
                 }}
@@ -215,7 +188,7 @@ const DashboardPage = () => {
                       fontWeight: 800,
                     }}
                   >
-                    {item.movie}
+                    {item.movieTitle}
                   </Typography>
 
                   <Typography
@@ -223,23 +196,13 @@ const DashboardPage = () => {
                       fontWeight: 800,
                     }}
                   >
-                    {item.rate}%
+                    {item.reservationRate}%
                   </Typography>
                 </Box>
 
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: "text.secondary",
-                    mb: 1,
-                  }}
-                >
-                  {item.description}
-                </Typography>
-
                 <LinearProgress
                   variant="determinate"
-                  value={item.rate}
+                  value={item.reservationRate}
                   sx={{
                     height: 10,
                     borderRadius: 999,

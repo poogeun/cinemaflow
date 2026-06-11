@@ -7,6 +7,7 @@ import MoviePage from "../pages/MoviePage.jsx";
 import TheaterPage from "../pages/TheaterPage.jsx";
 import ScreeningPage from "../pages/ScreeningPage.jsx";
 import ReservationPage from "../pages/ReservationPage.jsx";
+import ProtectedRoute from "../components/common/ProtectedRoute.jsx";
 
 const router = createBrowserRouter([
   {
@@ -15,7 +16,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <AdminLayout />,
+    element: (
+      <ProtectedRoute>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { index: true, element: <DashboardPage /> },
       { path: "movies", element: <MoviePage /> },
