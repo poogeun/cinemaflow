@@ -18,6 +18,7 @@ model Movie {
   title       String
   description String?
   runningTime Int
+  posterUrl   String?
 
   screenings Screening[]
 

@@ -113,9 +113,44 @@ const updateScreening = async (
    });
 };
 
+const getScreeningsByMovieId = async (
+  movieId
+) => {
+  return await prisma.screening.findMany({
+    where: {
+      movieId: Number(movieId),
+    },
+    include: {
+      movie: true,
+      theater: {
+        include: {
+          seats: {
+            orderBy: [
+              { rowLabel: "asc" },
+              { seatNumber: "asc" },
+            ],
+          },
+        },
+      },
+      reservations: {
+        where: {
+          status: "RESERVED",
+        },
+        include: {
+          reservationSeats: true,
+        },
+      },
+    },
+    orderBy: {
+      startTime: "asc",
+    },
+  });
+};
+
 export default {
   createScreening,
   getScreenings,
   deleteScreening,
   updateScreening,
+  getScreeningsByMovieId,
 };

@@ -49,9 +49,27 @@ const updateScreening = async (req, res, next) => {
   }
 };
 
+const getScreeningsByMovieId = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const screenings =
+      await screeningService.getScreeningsByMovieId(
+        req.params.movieId
+      );
+
+    res.json(screenings);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   createScreening,
   getScreenings,
   deleteScreening,
   updateScreening,
+  getScreeningsByMovieId,
 };

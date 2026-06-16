@@ -87,6 +87,7 @@ const MoviePage = () => {
     title: "",
     runningTime: "",
     description: "",
+    posterUrl: "",
   });
 
   const [movies, setMovies] = useState([]);
@@ -113,6 +114,7 @@ const MoviePage = () => {
       title: form.title,
       runningTime: Number(form.runningTime),
       description: form.description,
+      posterUrl: form.posterUrl,
     };
 
     if (selectedMovie) {
@@ -127,6 +129,7 @@ const MoviePage = () => {
       title: "",
       runningTime: "",
       description: "",
+      posterUrl: "",
     });
 
     setSelectedMovie(null);
@@ -142,6 +145,7 @@ const MoviePage = () => {
       title: "",
       runningTime: "",
       description: "",
+      posterUrl: "",
     });
 
     setSelectedMovie(null);
@@ -176,6 +180,7 @@ const MoviePage = () => {
       title: movie.title,
       runningTime: movie.runningTime,
       description: movie.description ?? "",
+      posterUrl: movie.posterUrl ?? "",
     });
 
     setOpen(true);

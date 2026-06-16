@@ -13,6 +13,7 @@ const createMovie = async ({
   title,
   description,
   runningTime,
+  posterUrl,
 }) => {
 
   if (!title) {
@@ -28,6 +29,7 @@ const createMovie = async ({
       title,
       description,
       runningTime,
+      posterUrl,
     },
   });
 };
@@ -55,6 +57,7 @@ const updateMovie = async (
     title,
     description,
     runningTime,
+    posterUrl,
   }
 ) => {
 
@@ -68,6 +71,7 @@ const updateMovie = async (
       title,
       description,
       runningTime,
+      posterUrl,
     },
   });
 };

@@ -155,7 +155,56 @@ const MovieDialog = ({
               },
             }}
           />
-        </Box>                    
+        </Box>
+
+        <Box>
+          <Typography
+            sx={{
+              mb: 1,
+              fontSize: 14,
+              fontWeight: 800,
+              color: "#374151",
+            }}
+          >
+            포스터 이미지 URL
+          </Typography>
+
+          <TextField
+            name="posterUrl"
+            value={form.posterUrl}
+            onChange={onChange}
+            fullWidth
+            placeholder="https://example.com/poster.jpg"
+            size="small"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 3,
+                height: 46,
+              },
+            }}
+          />
+        </Box>
+
+        {form.posterUrl && (
+          <Box
+            component="img"
+            src={form.posterUrl}
+            alt="포스터 미리보기"
+            onError={(event) => {
+              event.currentTarget.style.display =
+                "none";
+            }}
+            sx={{
+              width: 120,
+              aspectRatio: "2 / 3",
+              alignSelf: "center",
+              objectFit: "cover",
+              borderRadius: 3,
+              bgcolor: "#eef2ff",
+              boxShadow: "0 8px 24px rgba(15,23,42,0.12)",
+            }}
+          />
+        )}                            
       </DialogContent>
 
       <DialogActions
