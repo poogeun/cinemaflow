@@ -66,10 +66,28 @@ const getScreeningsByMovieId = async (
   }
 };
 
+const getScreeningById = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const screening =
+      await screeningService.getScreeningById(
+        req.params.id
+      );
+
+    res.json(screening);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   createScreening,
   getScreenings,
   deleteScreening,
   updateScreening,
   getScreeningsByMovieId,
+  getScreeningById,
 };

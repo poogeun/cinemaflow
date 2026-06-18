@@ -7,6 +7,11 @@ const router = express.Router();
 
 router.get("/", screeningController.getScreenings);
 
+router.get(
+  "/:id",
+  screeningController.getScreeningById
+);
+
 router.post(
   "/",
   authMiddleware,

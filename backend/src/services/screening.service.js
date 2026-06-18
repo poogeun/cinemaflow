@@ -147,10 +147,50 @@ const getScreeningsByMovieId = async (
   });
 };
 
+const getScreeningById = async (id) => {
+  const screening =
+    await prisma.screening.findUnique({
+      where: {
+        id: Number(id),
+      },
+      include: {
+        movie: true,
+        theater: {
+          include: {
+            seats: {
+              orderBy: [
+                {rowLabel: "asc" },
+                { seatNumber: "asc" },
+              ],
+            },
+          },
+        },
+        reservations: {
+          where: {
+            status: "RESERVED",
+          },
+          include: {
+            reservationSeats: true,
+          },
+        },
+      },
+    });
+
+  if (!screening) {
+    throw new AppError(
+      "상영 정보를 찾을 수 없습니다.",
+      404
+    );
+  }
+
+  return screening;
+};
+
 export default {
   createScreening,
   getScreenings,
   deleteScreening,
   updateScreening,
   getScreeningsByMovieId,
+  getScreeningById,
 };

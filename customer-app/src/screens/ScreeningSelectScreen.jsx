@@ -7,7 +7,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const ScreeningSelectScreen = () => {
   const { id } = useLocalSearchParams();
 
+  const [movie, setMovie] = useState(null);
   const [screenings, setScreenings] = useState([]);
+  const [dateItems, setDateItems] = useState([]);
+  const [selectedDate, setSelectedDate] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchScreenings = async () => {
@@ -16,6 +19,19 @@ const ScreeningSelectScreen = () => {
 
       const data = await getScreeningsByMovieId(id);
       setScreenings(data);
+
+      if (data.length > 0) {
+        setMovie(data[0].movie);
+
+        const nextDateItems =
+          createDateItems(data);
+
+        setDateItems(nextDateItems);
+
+        setSelectedDate(
+          nextDateItems[0]?.dateKey ?? ""
+        );
+      }
     } catch (error) {
       Alert.alert(
         "상영 일정 조회 실패",
@@ -44,6 +60,37 @@ const ScreeningSelectScreen = () => {
     );
   };
 
+  const getDateKey = (value) => {
+    const date = new Date(value);
+
+    const year = date.getFullYear();
+    const month = String(
+      date.getMonth() + 1
+    ).padStart(2, "0");
+    const day = String(
+      date.getDate()
+    ).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const getWeekLabel = (date) => {
+    const today = new Date();
+    const todayKey = getDateKey(today);
+    const dateKey = getDateKey(date);
+
+    if (dateKey === todayKey) {
+      return "오늘";
+    }
+
+    return date.toLocaleDateString(
+      "ko-KR",
+      {
+        weekday: "short",
+      }
+    );
+  };
+
   const formatTime = (value) => {
     const date = new Date(value);
 
@@ -56,10 +103,42 @@ const ScreeningSelectScreen = () => {
     );
   };
 
+  // 날짜 목록
+  const createDateItems = (items) => {
+    const nextDateItems = [];
+
+    items.forEach((screening) => {
+      const dateKey = getDateKey(
+        screening.startTime
+      );
+
+      const exists = nextDateItems.some(
+        (item) => item.dateKey === dateKey
+      );
+
+      if (!exists) {
+        nextDateItems.push({
+          dateKey,
+          date: new Date(
+            screening.startTime
+          ),
+        });
+      }
+    });
+
+    return nextDateItems;
+  };
+
+  const handleSelectDate = (dateKey) => {
+    setSelectedDate(dateKey);
+  };
+
   const handleSelectScreening = (
     screening
   ) => {
-    console.log("선택한 상영 일정", screening);
+    router.push(
+      `/screenings/${screening.id}/seats`
+    );
   };
 
   if (isLoading) {
@@ -72,6 +151,46 @@ const ScreeningSelectScreen = () => {
       </View>
     ); 
   }
+
+  // 선택한 날짜 상영 목록
+  const selectedScreenings = [];
+
+  screenings.forEach((screening) => {
+    const dateKey = getDateKey(
+      screening.startTime
+    );
+
+    if (dateKey === selectedDate) {
+      selectedScreenings.push(screening);
+    }
+  });
+
+  // 상영관별 상영 그룹
+  const theaterGroups = [];
+
+  selectedScreenings.forEach((screening) => {
+    const theaterId = screening.theater?.id;
+
+    let group = theaterGroups.find(
+      (item) => item.theaterId === theaterId
+    );
+
+    if (!group) {
+      group = {
+        theaterId,
+        theaterName:
+          screening.theater?.name ?? "상영관",
+        totalSeats:
+          screening.theater?.seats?.length ?? 0,
+        screenings: [],
+      };
+
+      theaterGroups.push(group);
+    }
+
+    group.screenings.push(screening);
+  });
+
 
   return (
     <SafeAreaView
@@ -96,49 +215,137 @@ const ScreeningSelectScreen = () => {
       </View>
 
       <FlatList
-        data={screenings}
+        data={theaterGroups}
         keyExtractor={(item) =>
-          String(item.id)
+          String(item.theaterId)
         }
         contentContainerStyle={styles.list}
+        ListHeaderComponent={
+          <>
+            <View style={styles.movieSummary}>
+              <Text style={styles.movieTitle}>
+                {movie?.title ?? "영화"}
+              </Text>
+
+              <Text style={styles.movieMeta}>
+                {movie?.runningTime ?? "-"}분 · 예매 가능
+              </Text>
+            </View>
+
+            <View style={styles.dateSection}>
+              <Text style={styles.sectionTitle}>
+                날짜 선택
+              </Text>
+
+              <FlatList
+                horizontal
+                data={dateItems}
+                keyExtractor={(item) =>
+                  item.dateKey
+                }
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.dateList}
+                renderItem={({ item }) => {
+                  const isSelected =
+                    item.dateKey === selectedDate;
+
+                  return (
+                    <Pressable
+                      onPress={() =>
+                        handleSelectDate(
+                          item.dateKey
+                        )
+                      }
+                      style={[
+                        styles.dateChip,
+                        isSelected &&
+                          styles.activeDateChip,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.dateWeek,
+                          isSelected &&
+                            styles.activeDateText,
+                        ]}
+                      >
+                        {getWeekLabel(item.date)}
+                      </Text>
+
+                      <Text
+                        style={[
+                          styles.dateDay,
+                          isSelected &&
+                            styles.activeDateText,
+                        ]}
+                      >
+                        {item.date.getDate()}
+                      </Text>
+                    </Pressable>
+                  );
+                }}
+              />
+            </View>
+
+            <Text style={styles.notice}>
+              관람할 시간을 선택해 주세요.
+            </Text>
+          </>
+        }
         ListEmptyComponent={
           <View style={styles.emptyBox}>
             <Text style={styles.emptyTitle}>
-              상영 일정이 없습니다
+              상영 일정이 없습니다.
             </Text>
 
             <Text style={styles.emptyDescription}>
-              이 영화의 상영 일정이 아직 등록되지 않았습니다.
+              선택한 날짜에 등록된 상영 일정이 없습니다.
             </Text>
-          </View>
+          </View>          
         }
         renderItem={({ item }) => (
-          <Pressable
-            onPress={() =>
-              handleSelectScreening(item)
-            }
-            style={({ pressed }) => [
-              styles.screeningCard,
-              pressed && styles.pressedCard,
-            ]}
-          >
-            <View>
-              <Text style={styles.dateText}>
-                {formatDate(item.startTime)}
+          <View style={styles.theaterCard}>
+            <View style={styles.theaterHeader}>
+              <Text style={styles.theaterName}>
+                {item.theaterName}
               </Text>
 
-              <Text style={styles.timeText}>
-                {formatTime(item.startTime)} 시작
+              <Text style={styles.seatInfo}>
+                {item.totalSeats}석
               </Text>
             </View>
 
-            <View style={styles.theaterBadge}>
-              <Text style={styles.theaterText}>
-                {item.theater?.name ??
-                  "상영관"}
-              </Text>
+            <View style={styles.timeGrid}>
+              {item.screenings.map((screening) => (
+                <Pressable
+                  key={screening.id}
+                  onPress={() =>
+                    handleSelectScreening(
+                      screening
+                    )
+                  }
+                  style={({ pressed }) => [
+                    styles.timeButton,
+                    pressed &&
+                      styles.pressedTimeButton,
+                  ]}
+                >
+                  <Text style={styles.startTime}>
+                    {formatTime(
+                      screening.startTime
+                    )}
+                  </Text>
+
+                  <Text style={styles.endTime}>
+                    종료{" "}
+                    {formatTime(
+                      screening.endTime
+                    )}
+                  </Text>
+                </Pressable>
+              ))}
             </View>
-          </Pressable>
+          </View>
         )}
       />
     </SafeAreaView>
@@ -190,37 +397,154 @@ const styles = StyleSheet.create({
     padding: 22,
   },
 
-  screeningCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  movieSummary: {
+    paddingHorizontal: 22,
+    paddingVertical: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#f1f2f6",
+    backgroundColor: "#ffffff",
+  },
+
+  movieTitle: {
+    color: "#111827",
+    fontSize: 22,
+    fontWeight: "900",
+    letterSpacing: -0.8,
+  },
+
+  movieMeta: {
+    marginTop: 8,
+    color: "#6b7280",
+    fontSize: 13,
+  },
+
+  dateSection: {
+    paddingTop: 18,
+    paddingBottom: 18,
+    paddingLeft: 22,
+    borderTopWidth: 10,
+    borderTopColor: "#f7f8fc",
+    backgroundColor: "#ffffff",
+  },
+
+  sectionTitle: {
     marginBottom: 14,
-    padding: 18,
+    color: "#111827",
+    fontSize: 16,
+    fontWeight: "900",
+  },
+
+  dateList: {
+    paddingRight: 22,
+    gap: 10,
+  },
+
+  dateChip: {
+    width: 66,
+    alignItems: "center",
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
     borderRadius: 18,
     backgroundColor: "#ffffff",
   },
 
-  pressedCard: {
-    opacity: 0.8,
+  activeDateChip: {
+    borderColor: "#4f46e5",
+    backgroundColor: "#4f46e5",
   },
 
-  dateText: {
+  dateWeek: {
+    color: "#6b7280",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+
+  dateDay: {
+    marginTop: 6,
+    color: "#111827",
+    fontSize: 20,
+    fontWeight: "900",
+  },
+
+  activeDateText: {
+    color: "#ffffff",
+  },
+
+  notice: {
+    paddingHorizontal: 22,
+    paddingTop: 22,
+    paddingBottom: 18,
+    color: "#6b7280",
+    fontSize: 13,
+  },
+
+  theaterCard: {
+    marginHorizontal: 22,
+    marginBottom: 16,
+    padding: 18,
+    borderRadius: 20,
+    backgroundColor: "#ffffff",
+    shadowColor: "#0f172a",
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.04,
+    shadowRadius: 24,
+    elevation: 2,
+  },
+
+  theaterHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 14,
+  },
+
+  theaterName: {
+    color: "#111827",
+    fontSize: 16,
+    fontWeight: "900",
+  },
+
+  seatInfo: {
+    color: "#6b7280",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+
+  timeGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+
+  timeButton: {
+    minWidth: 82,
+    paddingHorizontal: 13,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: "#dfe3ed",
+    borderRadius: 14,
+    backgroundColor: "#ffffff",
+  },
+
+  pressedTimeButton: {
+    borderColor: "#4f46e5",
+    backgroundColor: "#eef2ff",
+  },
+
+  startTime: {
     color: "#111827",
     fontSize: 15,
     fontWeight: "900",
   },
 
-  timeText: {
-    marginTop: 7,
+  endTime: {
+    marginTop: 5,
     color: "#6b7280",
-    fontSize: 13,
-  },
-
-  theaterBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: "#eef2ff",
+    fontSize: 11,
   },
 
   emptyBox: {

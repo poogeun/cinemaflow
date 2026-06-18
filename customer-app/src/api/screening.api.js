@@ -9,3 +9,11 @@ export const getScreeningsByMovieId = async (
 
   return response.data;
 };
+
+export const getScreeningById = async (id) => {
+  const response = await api.get(
+    `screenings/${id}`
+  );
+
+  return response.data;
+}

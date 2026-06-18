@@ -8,7 +8,6 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware,
-  adminMiddleware,
   reservationController.createReservation
 );
 
@@ -21,7 +20,6 @@ router.get(
 router.patch(
   "/:id/cancel",
   authMiddleware,
-  adminMiddleware,
   reservationController.cancelReservation
 );
 
