@@ -44,7 +44,7 @@ const SeatSelectScreen = () => {
     (reservation) => {
       reservation.reservationSeats.forEach(
         (reservationSeat) => {
-          reservationSeatIds.push(
+          reservedSeatIds.push(
             reservationSeat.seatId
           );
         }

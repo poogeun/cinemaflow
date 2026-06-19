@@ -1,4 +1,4 @@
-import MovieScreen from "../src/screens/MovieScreen";
+import MovieScreen from "../../src/screens/MovieScreen";
 
 const MoviesPage = () => {
   return <MovieScreen />;

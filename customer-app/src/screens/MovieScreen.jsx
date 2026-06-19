@@ -101,7 +101,7 @@ const MovieScreen = () => {
                   <Text style={styles.profileText}>
                     Y
                   </Text>
-                </Pressable>
+                </Pressable>                
               </View>
 
               <Text style={styles.welcome}>
@@ -217,6 +217,15 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 
+  welcome: {
+    marginTop: 26,
+    color: "#111827",
+    fontSize: 25,
+    fontWeight: "900",
+    lineHeight: 34,
+    letterSpacing: -0.8,
+  },
+
   profile: {
     width: 40,
     height: 40,
@@ -229,16 +238,7 @@ const styles = StyleSheet.create({
   profileText: {
     color: "#ffffff",
     fontWeight: "900",
-  },
-
-  welcome: {
-    marginTop: 26,
-    color: "#111827",
-    fontSize: 25,
-    fontWeight: "900",
-    lineHeight: 34,
-    letterSpacing: -0.8,
-  },
+  },  
 
   subtitle: {
     marginTop: 8,
