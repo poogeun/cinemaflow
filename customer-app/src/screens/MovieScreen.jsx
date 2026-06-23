@@ -10,6 +10,8 @@ const MovieScreen = () => {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("NOW_SHOWING");
+
 
   const fetchMovies = async () => {
     try {
@@ -32,6 +34,41 @@ const MovieScreen = () => {
   useEffect(() => {
     fetchMovies();
   }, []);
+
+  const isNowShowing = (movie) => {
+    if (!movie.releaseDate) {
+      return true;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const releaseDate = new Date(movie.releaseDate);
+    releaseDate.setHours(0, 0, 0, 0);
+
+    return releaseDate <= today;
+  };
+
+  // 현재상영 or 상영예정
+  const filteredMovies = [];
+
+  movies.forEach((movie) => {
+    const nowShowing = isNowShowing(movie);
+
+    if (
+      selectedTab === "NOW_SHOWING" &&
+      nowShowing
+    ) {
+      filteredMovies.push(movie);
+    }
+
+    if (
+      selectedTab === "COMMING_SOON" &&
+      !nowShowing
+    ) {
+      filteredMovies.push(movie);
+    }
+  });
 
   const handleMoviePress = (movie) => {
     router.push(`/movies/${movie.id}`);
@@ -115,22 +152,47 @@ const MovieScreen = () => {
             </View>
 
             <View style={styles.tabs}>
-              <View
+              <Pressable
+                onPress={() =>
+                  setSelectedTab("NOW_SHOWING")
+                }
                 style={[
                   styles.tab,
-                  styles.activeTab,
+                  selectedTab === "NOW_SHOWING" &&
+                    styles.activeTab,
                 ]}
               >
-                <Text style={styles.activeTabText}>
+                <Text
+                  style={[
+                    styles.tabText,
+                    selectedTab === "NOW_SHOWING" &&
+                      styles.activeTabText,
+                  ]}
+                >
                   현재 상영작
                 </Text>
-              </View>
+              </Pressable>
 
-              <View style={styles.tab}>
-                <Text style={styles.tabText}>
+              <Pressable
+                onPress={() =>
+                  setSelectedTab("COMMING_SOON")
+                }
+                style={[
+                  styles.tab,
+                  selectedTab === "COMMING_SOON" &&
+                    styles.activeTab,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    selectedTab === "COMMING_SOON" &&
+                      styles.activeTabText,
+                  ]}
+                >
                   상영 예정작
                 </Text>
-              </View>             
+              </Pressable>    
             </View>
 
             <View style={styles.sectionHeader}>
@@ -139,11 +201,11 @@ const MovieScreen = () => {
               </Text>
 
               <Text style={styles.count}>
-                총 {movies.length}편
+                총 {filteredMovies.length}편
               </Text>
             </View>
 
-            {movies.length === 0 ? (
+            {filteredMovies.length === 0 ? (
               <View style={styles.emptyBox}>
                 <Text style={styles.emptyTitle}>
                   등록된 영화가 없습니다.
@@ -151,7 +213,7 @@ const MovieScreen = () => {
               </View>
             ) : (
               <FlatList
-                data={movies}
+                data={filteredMovies}
                 horizontal
                 keyExtractor={(item) =>
                   `chart-${item.id}`

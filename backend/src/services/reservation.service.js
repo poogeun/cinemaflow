@@ -16,6 +16,15 @@ export const createReservation = async ({
     throw new AppError("상영 정보를 찾을 수 없습니다.", 404);
   }
 
+  const now = new Date();
+
+  if (screening.startTime <= now) {
+    throw new AppError(
+      "이미 시작된 상영은 예매할 수 없습니다.",
+      400
+    );
+  }
+
   const seats = await prisma.seat.findMany({
     where: {
       id: {

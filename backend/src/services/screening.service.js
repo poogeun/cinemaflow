@@ -116,9 +116,14 @@ const updateScreening = async (
 const getScreeningsByMovieId = async (
   movieId
 ) => {
+  const now = new Date();
+
   return await prisma.screening.findMany({
     where: {
       movieId: Number(movieId),
+      startTime: {
+        gte: now,
+      },
     },
     include: {
       movie: true,

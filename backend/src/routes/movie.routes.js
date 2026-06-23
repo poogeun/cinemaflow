@@ -8,6 +8,12 @@ const router = express.Router();
 
 router.get("/", movieController.getMovies);
 
+router.post(
+  "/sync/tmdb",
+  authMiddleware,
+  adminMiddleware,
+  movieController.syncTmdbMovies
+);
 
 router.get(
   "/:movieId/screenings",

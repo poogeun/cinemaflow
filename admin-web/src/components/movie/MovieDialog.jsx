@@ -137,6 +137,34 @@ const MovieDialog = ({
               color: "#374151",
             }}
           >
+            Release Date
+          </Typography>
+
+          <TextField
+            name="releaseDate"
+            type="date"
+            value={form.releaseDate}
+            onChange={onChange}
+            fullWidth
+            size="small"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 3,
+                height: 46,
+              },
+            }}
+          />
+        </Box>        
+
+        <Box>
+          <Typography
+            sx={{
+              mb: 1,
+              fontSize: 14,
+              fontWeight: 800,
+              color: "#374151",
+            }}
+          >
             Description
           </Typography>
 

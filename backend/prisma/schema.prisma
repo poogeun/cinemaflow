@@ -15,10 +15,12 @@ datasource db {
 model Movie {
   id          Int      @id @default(autoincrement())
 
+  tmdbId      Int?     @unique
   title       String
   description String?
   runningTime Int
   posterUrl   String?
+  releaseDate DateTime?
 
   screenings Screening[]
 

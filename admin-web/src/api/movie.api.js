@@ -19,3 +19,8 @@ export const deleteMovie = async (id) => {
   const response = await api.delete(`/movies/${id}`);
   return response.data;
 };
+
+export const syncTmdbMovies = async () => {
+  const response = await api.post("/movies/sync/tmdb");
+  return response.data;
+};

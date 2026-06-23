@@ -55,10 +55,24 @@ const deleteMovie = async (req, res, next) => {
   }
 };
 
+const syncTmdbMovies = async (req, res, next) => {
+  try {
+    const result = await movieService.syncTmdbMovies();
+
+    res.json({
+      message: "TMDB 영화 동기화가 완료되었습니다.",
+      ...result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   getMovies,
   createMovie,
   getMovieById,
   updateMovie,
   deleteMovie,
+  syncTmdbMovies,
 };

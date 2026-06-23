@@ -1,7 +1,7 @@
 import { Box, Button, Chip, Paper, TextField, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
-import { createMovie, deleteMovie, getMovies, updateMovie } from "../api/movie.api.js";
+import { createMovie, deleteMovie, getMovies, syncTmdbMovies, updateMovie } from "../api/movie.api.js";
 import ConfirmDialog from "../components/common/ConfirmDialog.jsx";
 import MovieDialog from "../components/movie/MovieDialog.jsx";
 
@@ -88,9 +88,17 @@ const MoviePage = () => {
     runningTime: "",
     description: "",
     posterUrl: "",
+    releaseDate: "",
   });
 
   const [movies, setMovies] = useState([]);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState(null);
+
+  const fetchMovies = async () => {
+    const data = await getMovies();
+    setMovies(data);
+  };
 
   useEffect(() => {
     fetchMovies();
@@ -99,6 +107,24 @@ const MoviePage = () => {
   const filterdMovies = movies.filter((movie) =>
     movie.title.toLowerCase().includes(keyword.toLowerCase())
   );
+
+  const handleSyncTmdbMovies = async () => {
+    try {
+      setSyncing(true);
+      setSyncResult(null);
+
+      const result = await syncTmdbMovies();
+
+      setSyncResult(result);
+
+      await fetchMovies();
+    } catch (error) {
+      console.error(error);
+      alert("TMDB 영화 동기화에 실패했습니다.");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -115,6 +141,7 @@ const MoviePage = () => {
       runningTime: Number(form.runningTime),
       description: form.description,
       posterUrl: form.posterUrl,
+      releaseDate: form.releaseDate,
     };
 
     if (selectedMovie) {
@@ -130,6 +157,7 @@ const MoviePage = () => {
       runningTime: "",
       description: "",
       posterUrl: "",
+      releaseDate: "",
     });
 
     setSelectedMovie(null);
@@ -146,14 +174,10 @@ const MoviePage = () => {
       runningTime: "",
       description: "",
       posterUrl: "",
+      releaseDate: "",
     });
 
     setSelectedMovie(null);
-  };
-
-  const fetchMovies = async () => {
-    const data = await getMovies();
-    setMovies(data);
   };
 
   const handleDeleteOpen = (movie) => {
@@ -181,6 +205,7 @@ const MoviePage = () => {
       runningTime: movie.runningTime,
       description: movie.description ?? "",
       posterUrl: movie.posterUrl ?? "",
+      releaseDate: movie.releaseDate.slice(0, 10) ?? "",
     });
 
     setOpen(true);
@@ -215,21 +240,61 @@ const MoviePage = () => {
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          onClick={handleOpen}
+        <Box sx={{ display: "flex", gap: 1.5 }}>
+          <Button
+            variant="outlined"
+            onClick={handleSyncTmdbMovies}
+            disabled={syncing}
+            sx={{
+              borderRadius: 3,
+              px: 3,
+              py: 1.2,
+              textTransform: "none",
+              fontWeight: 800,
+              borderColor: "#4f46e5",
+              color: "#4f46e5",
+            }}
+          >
+            {syncing ? "Syncing..." : "최신 영화 동기화"}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleOpen}
+            sx={{
+              borderRadius: 3,
+              px: 3,
+              py: 1.2,
+              textTransform: "none",
+              fontWeight: 800,
+              bgcolor: "#4f46e5",
+            }}
+          >
+            + Add Movie
+          </Button>
+        </Box>
+
+      </Box>
+
+      {syncResult && (
+        <Paper
           sx={{
-            borderRadius: 3,
-            px: 3,
-            py: 1.2,
-            textTransform: "none",
-            fontWeight: 800,
-            bgcolor: "#4f46e5",
+            p: 2,
+            mb: 3,
+            borderRadius: 4,
+            bgcolor: "#f8fafc",
+            boxShadow: "none",
+            border: "1px solid #e5e7eb",
           }}
         >
-          + Add Movie
-        </Button>
-      </Box>
+          <Typography sx={{ fontWeight: 800 }}>
+            TMDB 동기화 완료
+          </Typography>
+          <Typography sx={{ color: "text.secondary", mt: 0.5 }}>
+            신규 {syncResult.created}개 · 업데이트 {syncResult.updated}개 ·
+            건너뜀 {syncResult.skipped}개 · 실패 {syncResult.failed}개
+          </Typography>
+        </Paper>
+      )}
 
       <Paper
         sx={{
