@@ -7,6 +7,20 @@ const router = express.Router();
 
 router.get("/", screeningController.getScreenings);
 
+router.post(
+  "/auto-schedule/preview",
+  authMiddleware,
+  adminMiddleware,
+  screeningController.generateAutoSchedulePreview
+);
+
+router.post(
+  "/auto-schedule/confirm",
+  authMiddleware,
+  adminMiddleware,
+  screeningController.confirmAutoSchedule
+);
+
 router.get(
   "/:id",
   screeningController.getScreeningById

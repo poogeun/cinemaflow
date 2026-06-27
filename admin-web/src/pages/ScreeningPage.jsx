@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { deleteScreening, getScreenings, updateScreening } from "../api/screening.api.js";
+import { confirmAutoSchedule, deleteScreening, generateAutoSchedulePreview, getScreenings, updateScreening } from "../api/screening.api.js";
 import { Box, Button, Chip, Paper, TextField, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { getMovies } from "../api/movie.api.js";
@@ -7,20 +7,8 @@ import { getTheaters } from "../api/theater.api.js";
 import { createScreening } from "../api/screening.api.js";
 import ScreeningDialog from "../components/screening/ScreeningDialog.jsx";
 import ConfirmDialog from "../components/common/ConfirmDialog.jsx";
-
-const formatDateTime = (value) => {
-  if (!value) return "-";
-
-  const date = new Date(value);
-
-  return date.toLocaleString("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+import AutoScheduleDialog from "../components/screening/AutoScheduleDialog.jsx";
+import { formatDateTime, formatInputDate, formatInputTime } from "../utils/date.js";
 
 const ScreeningPage = () => {
   const [screenings, setScreenings] = useState([]);
@@ -37,6 +25,20 @@ const ScreeningPage = () => {
     theaterId: "",
     startDate: "",
     startTime: "",
+  });
+
+  const [autoScheduleOpen, setAutoScheduleOpen] = useState(false);
+  const [autoSchedulePreview, setAutoSchedulePreview] = useState(null);
+  const [autoScheduleLoading, setAutoScheduleLoading] = useState(false);
+
+  const [autoScheduleForm, setAutoScheduleForm] = useState({
+    movieIds: [],
+    theaterIds: [],
+    startDate: "",
+    endDate: "",
+    openTime: "09:00",
+    closeTime: "23:30",
+    cleaningMinutes: 15,
   });
 
   const fetchScreenings = async () => {
@@ -128,16 +130,6 @@ const ScreeningPage = () => {
     handleDeleteClose();
   };
 
-  const formatInputDate = (value) => {
-    const date = new Date(value);
-    return date.toISOString().slice(0, 10);
-  };
-
-  const formatInputTime = (value) => {
-    const date = new Date(value);
-    return date.toISOString().slice(11, 16);
-  };
-
   const handleEditOpen = (screening) => {
     setSelectedScreening(screening);
 
@@ -149,6 +141,66 @@ const ScreeningPage = () => {
     });
 
     setOpen(true);
+  };
+
+  const handleAutoScheduleOpen = () => {
+    setAutoScheduleOpen(true);
+  };
+
+  const handleAutoScheduleClose = () => {
+    setAutoScheduleOpen(false);
+    setAutoSchedulePreview(null);    
+  }
+
+  const handleAutoScheduleChange = (name, value) => {
+    setAutoScheduleForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleGenerateAutoSchedulePreview = async () => {
+    try {
+      setAutoScheduleLoading(true);
+
+      const preview =
+        await generateAutoSchedulePreview(autoScheduleForm);
+
+      setAutoSchedulePreview(preview);
+    } catch (error) {
+      console.error(error);
+      alert("자동 편성 미리보기 생성에 실패했습니다.");
+    } finally {
+      setAutoScheduleLoading(false);
+    }
+  };
+
+  const handleConfirmAutoSchedule = async () => {
+    if (!autoSchedulePreview?.items?.length) {
+      alert("저장할 상영 일정이 없습니다.");
+      return;
+    }
+
+    try {
+      setAutoScheduleLoading(true);
+
+      const result = await confirmAutoSchedule(
+        autoSchedulePreview.items
+      );
+
+      alert(
+        `저장 완료: 생성 ${result.created}개, 충돌 ${result.conflicts}개, 건너뜀 ${result.skipped}개`
+      );
+
+      handleAutoScheduleClose();
+
+      await fetchScreenings();
+    } catch (error) {
+      console.error(error);
+      alert("자동 편성 저장에 실패했습니다.");
+    } finally {
+      setAutoScheduleLoading(false);
+    }
   };
 
   const getSelectedMovie = () => {
@@ -312,20 +364,38 @@ const ScreeningPage = () => {
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          onClick={handleOpen}
-          sx={{
-            borderRadius: 3,
-            px: 3,
-            py: 1.2,
-            bgcolor: "#4f46e5",
-            textTransform: "none",
-            fontWeight: 800,
-          }}
-        >
-          + Add Screening
-        </Button>
+        <Box sx={{ display: "flex", gap: 1.5 }}>
+          <Button
+            variant="outlined"
+            onClick={handleAutoScheduleOpen}
+            sx={{
+              borderRadius: 3,
+              px: 3,
+              py: 1.2,
+              textTransform: "none",
+              fontWeight: 800,
+              borderColor: "#4f46e5",
+              color: "#4f46e5",
+            }}
+          >
+            자동 편성
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleOpen}
+            sx={{
+              borderRadius: 3,
+              px: 3,
+              py: 1.2,
+              bgcolor: "#4f46e5",
+              textTransform: "none",
+              fontWeight: 800,
+            }}
+          >
+            + Add Screening
+          </Button>
+        </Box>
+
       </Box>
 
       <Paper
@@ -438,6 +508,19 @@ const ScreeningPage = () => {
         targetName={deleteTarget?.movie?.title}
         onClose={handleDeleteClose}
         onConfirm={handleDelete}
+      />
+
+      <AutoScheduleDialog
+        open={autoScheduleOpen}
+        movies={movies}
+        theaters={theaters}
+        loading={autoScheduleLoading}
+        preview={autoSchedulePreview}
+        form={autoScheduleForm}
+        onClose={handleAutoScheduleClose}
+        onChange={handleAutoScheduleChange}
+        onGeneratePreview={handleGenerateAutoSchedulePreview}
+        onConfirm={handleConfirmAutoSchedule}
       />
     </Box>
   );

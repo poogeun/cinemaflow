@@ -1,4 +1,5 @@
 import screeningService from "../services/screening.service.js";
+import screeningAutoScheduleService from "../services/screeningAutoSchedule.service.js";
 
 const createScreening = async (
   req,
@@ -83,6 +84,43 @@ const getScreeningById = async (
   }
 };
 
+const generateAutoSchedulePreview = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const preview =
+      await screeningAutoScheduleService.generatePreview(
+        req.body
+      );
+
+    res.json(preview);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const confirmAutoSchedule = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const result =
+      await screeningAutoScheduleService.confirmSchedule(
+        req.body.items
+      );
+
+    res.status(201).json({
+      message: "자동 편성 상영 일정이 저장되었습니다.",
+      ...result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   createScreening,
   getScreenings,
@@ -90,4 +128,6 @@ export default {
   updateScreening,
   getScreeningsByMovieId,
   getScreeningById,
+  generateAutoSchedulePreview,
+  confirmAutoSchedule,
 };
