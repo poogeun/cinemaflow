@@ -25,21 +25,19 @@
 
 <table>
   <tr>
-    <td width=50%>
+    <td width=25%>
       <strong>영화 목록</strong><br />
       <img src=./docs/images/customer-movies.png width=100% />
     </td>
-    <td width=50%>
+    <td width=25%>
       <strong>영화 상세</strong><br />
       <img src=./docs/images/customer-movie-detail.png width=100% />
     </td>
-  </tr>
-  <tr>
-    <td width=50%>
+    <td width=25%>
       <strong>상영 시간 선택</strong><br />
       <img src=./docs/images/customer-screenings.png width=100% />
     </td>
-    <td width=50%>
+    <td width=25%>
       <strong>좌석 선택</strong><br />
       <img src=./docs/images/customer-seats.png width=100% />
     </td>
@@ -102,26 +100,19 @@ CinemaFlow는 영화 예매 흐름을 통합 관리하기 위한 풀스택 영�
 
 - Expo
 - React Native
-- Expo Router
-- Axios
-- Expo SecureStore
 
 ### Admin Web
 
 - React
 - Vite
 - Material UI (MUI)
-- React Router
-- Axios
 
 ### Backend
 
 - Node.js
-- Express
 - Prisma
 - PostgreSQL
 - JWT
-- bcrypt
 
 </details>
 
@@ -173,9 +164,6 @@ CinemaFlow는 영화 예매 흐름을 통합 관리하기 위한 풀스택 영�
 
 <img src=./docs/images/tmdb-sync.png width=70% />
 
-### PostgreSQL
-
-영화, 상영관, 좌석, 상영 일정, 사용자, 예매 데이터를 관계형 구조로 관리합니다.
 
 </details>
 
