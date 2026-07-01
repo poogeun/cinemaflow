@@ -3,3 +3,11 @@ node_modules
 .env
 
 /src/generated/prisma
+
+# portfolio screenshot seed data
+prisma/seed-portfolio.js
+prisma/seed-dashboard-demo.js
+prisma/add-mario-screenings.js
+prisma/inspect-movies.js
+prisma/add-mario-future-screenings.js
+prisma/add-mario-today-extra-screenings.js
